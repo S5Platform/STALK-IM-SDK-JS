@@ -22212,6 +22212,7 @@ function isUndefined(arg) {
 
             if( data.TS ){
               data.createdAt = new Date(data.TS);
+              data.created = Util.dateToString(data.createdAt);
             } 
           }
 
@@ -22476,6 +22477,8 @@ function isUndefined(arg) {
         channelId: channel.id,
         createdAt: object.get("createdAt"),
         updatedAt: object.get("updatedAt"),
+        created: Util.dateToString(object.get("createdAt")),
+        updated: Util.dateToString(object.get("updatedAt")),
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
         users: users,
@@ -22525,6 +22528,8 @@ function isUndefined(arg) {
         channelId: channel.id,
         createdAt: channel.get("createdAt"),
         updatedAt: channel.get("updatedAt"),
+        created: Util.dateToString(channel.get("createdAt")),
+        updated: Util.dateToString(channel.get("updatedAt")),
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
         users: users,
@@ -22544,6 +22549,7 @@ function isUndefined(arg) {
         _id: object.id,
         text: object.get("message"),
         createdAt: object.createdAt,
+        created: Util.dateToString(object.createdAt),
         user: {
           id: user.id,
           username: user.get('username'),
@@ -22637,10 +22643,11 @@ function isUndefined(arg) {
 
       result.push(yyyy + "-" + mm + "-" + dd);
       result.push(hour + ":" + minute + ":" + second);
+      result.push(yyyy + "-" + mm + "-" + dd +" "+hour + ":" + minute + ":" + second);
       result.push(date.toLocaleTimeString());
 
       if( type == undefined ){
-        type = 0;
+        type = 3;
       }
 
       return result[type];  
