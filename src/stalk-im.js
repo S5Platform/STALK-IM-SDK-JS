@@ -101,7 +101,7 @@
      * @param {string} username - 사용자 이름(or email)
      * @param {string} password - 비밀번호
      * @param {Object} attrs - 신규 유저에게 설정할 추가 필드
-     * @param {callback} callback - 회원가입 후 수행할 callback function
+     * @param {callback} callback - 회원가입 후 호출되는 callback function
      * @example
      * stalk.signUp("james", "1234", function(err, result){
      *  console.log( result );
@@ -141,7 +141,7 @@
      * @function
      * @param {string} username - 사용자 이름(or email)
      * @param {string} password - 비밀번호
-     * @param {callback} callback - 회원가입 후 수행할 callback function
+     * @param {callback} callback - 회원가입 후 호출되는 callback function
      * @example
      * stalk.logIn(username, password, function(err, result){
      *  console.log( result );
@@ -178,6 +178,7 @@
      * stalk.logOut()
      */
     Stalk.prototype.logOut = function(){
+      this._currentUser = undefined;
       Parse.User.logOut();
     };
 
@@ -210,8 +211,8 @@
      * @name updateUser
      * @memberof Stalk
      * @function
-     * @param {string} key - user 객체에 추가해야할 key
-     * @param {string} value - user 객체에 추가해야할 key에 매핑되는 value
+     * @param {string} key - 업데이트할 사용자 필드의 key
+     * @param {string or object} value - 업데이트할 사용자 필드의 value
      * @param {callback} callback - 사용자 정보를 수정후 호출되는 callback
      * @example
      * stalk.updateUser( 'nickName', '파인애플', function(err, user){
@@ -270,6 +271,7 @@
      * });
      */
     Stalk.prototype.searchUsers = function(keyword, callback){
+      var currentUser = Parse.User.current();
 
       var data = {
         keyword: keyword,
@@ -292,8 +294,18 @@
         query = query.limit(limit).ascending('username');
 
         query.find({
-          success:function(results) {
-            callback( null, results.map(ParseUtil.fromUserToJSON) )
+          success:function(users) {
+
+            users.reduceRight(function(acc, user, index, object) {
+
+              if (user.id === currentUser.id) {
+                object.splice(index, 1);
+              } else {
+                object[index] = ParseUtil.fromUserToJSON(user);
+              }
+            }, []);
+
+            callback( null, users )
           },
           error: function(object, error) {
             callback( error, null );
@@ -347,17 +359,29 @@
      * });
      */
     Stalk.prototype.createFollow = function(id, callback){
-      if( typeof(id) == 'array' ){
-        if( id.size > 0 ){
-          id = id[0];
-        } else {
-          callback( {'message':'Invalid ids'}, null );
-        }
+
+      var param = {};
+      var isArray = false;
+      if( typeof(id) == 'object' && Array.isArray(id) ){
+        isArray = true;
+      } else {
+        isArray = false;
       }
 
       Parse.Cloud.run('follows-create', {id:id}, {
         success:function(result) {
-          callback( null, ParseUtil.fromFollowToJSON(result) );
+          var results = [];
+          try {
+            results = result.map( ParseUtil.fromFollowToJSON );
+          } catch( err ){
+            console.error(err);
+          }
+
+          if( !isArray ){
+            callback( null, results[0] );
+          } else {
+            callback( null, results );
+          }
         },
         error: function(object, error) {
           callback( error, null );
@@ -505,7 +529,7 @@
      * @memberof Stalk
      * @function
      * @example
-     * stalk.onGlobalMessage();
+     * stalk.onGlobalMessage(function(){
      *  console.log( data );
      * });
      */
@@ -728,7 +752,7 @@
 
 
     /**
-     * 현재 사용자의 Channels List를 조회한다.
+     * 현재 Channel내의 메세지를 조회한다.
      * @name loadMessages
      * @memberof Channel
      * @function
@@ -771,7 +795,7 @@
     }; 
 
     /**
-     * 현재 활성화된 채널에 Text 메세지를 전송한다.
+     * 현재 채널에 Text 메세지를 전송한다.
      * @name sendText
      * @memberof Channel
      * @function
@@ -810,7 +834,7 @@
     };
 
     /**
-     * 현재 활성화된 채널에 이미지url을 전송한다.
+     * 현재 채널에 이미지url을 전송한다.
      * @name sendImageUrl
      * @memberof Channel
      * @function
@@ -835,7 +859,7 @@
     };
 
     /**
-     * 현재 활성화된 채널에 파일을 전송한다.
+     * 현재 채널에 파일을 전송한다.
      * @name sendImageFile
      * @memberof Channel
      * @function
