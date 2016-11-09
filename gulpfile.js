@@ -22,7 +22,7 @@ var stalk_paths = {
 
 gulp.task('compile', [], function () {
   return gulp.src(stalk_paths.scripts)
-    .pipe(concat('stalk.js'))
+    .pipe(concat('stalk-im.js'))
     .pipe(gulp.dest('build'));
 });
 
@@ -32,7 +32,7 @@ gulp.task('move', [], function () {
 });
 
 gulp.task('minify', function() {
-  return gulp.src('dist/stalk.js')
+  return gulp.src('dist/stalk-im.js')
     .pipe(uglify())
     .pipe(rename({ extname: '.min.js' }))
     .pipe(gulp.dest('./dist'))

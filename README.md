@@ -1,28 +1,31 @@
-# Stalk SDK for JavaScript
+# stalk messenger SDK for JavaScript
 
-### Features
+Features
 -----------
+
 * Supports S5Platform's parse APIs
 * Supports S5Platform's xpush APIs
 * Supports socket.io
 
-### Constructors
+Constructors
 -----------
-##### new Stalk(host, appId)
 
-###### Parameters:
+### new Stalk(host, appId)
+
+##### Parameters:
 * `host` *string* : stalk-messenger session server's hostname and port
 
 * `appId` *string* : stalk-messenger session server's APP_ID (Default : STALK)
 
-###### Retuns: *Stalk* oject
+##### Retuns: *Stalk* oject
 
-### Methods
-----------
-##### signUp(username, password, attrs, callback)
+Methods
+-----------
+
+### signUp(username, password, attrs, callback)
  Signs up a new user with a username (or email) and password
 
-###### Parameters:
+##### Parameters:
 * `username` *string* : The username (or email) to sign up with.
 
 * `password` *string* : The password to sign up with.

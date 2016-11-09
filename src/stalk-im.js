@@ -24,7 +24,7 @@
     var oldDebug;
 
     var Stalk = function(host, appId){
-      if( appId == undefined ){
+      if( !appId ){
         appId = 'STALK';
       }
 
@@ -38,6 +38,8 @@
       self._channels = {};
       self._currentUser = undefined;
       self._currentChannel = undefined;
+      self.onGlobalMessageCallback = undefined;
+      self._globalSocketConnected = false;
 
       Parse.initialize(appId);
       Parse.serverURL = self.hostname+'/parse';
@@ -149,9 +151,16 @@
       var self = this;
       Parse.User.logIn(username, password, {
         success: function(user) {
-          // Do stuff after successful login.
           var jsonUser = ParseUtil.fromUserToJSON(user, 160);
           self._currentUser = jsonUser;
+
+          // coonect global channl
+          try{
+            self._connectGlobalChannel();
+          } catch ( err ){
+            console.log( err );
+          }
+
           callback( null, jsonUser );
         },
         error: function(user, error) {
@@ -452,6 +461,58 @@
       });
     };
 
+    Stalk.prototype._connectGlobalChannel = function(){
+      var self = this;
+      var userId = self._currentUser.id;
+
+      self.ajax( '/node/'+self.appId+'-BG/'+encodeURIComponent(userId) , 'GET', {}, function(err, data){
+        if( err ){
+          console.error( err );
+          self._globalSocketConnected = false;
+        } else if ( data.status == 'ok'){
+          var name = data.result.server.name;
+          var url = data.result.server.url;
+
+          var query =
+              'A='+self.appId+'&'+
+              'U='+userId;
+
+          self._globalSocket = io.connect(url+'/background?'+query, socketOptions);
+
+          self._globalSocket.on('connect', function(){
+            debug( 'global connection completed' );
+            self._globalSocketConnected = true;
+          });
+
+          self._globalSocket.on('disconnect', function(){
+            console.warn( 'global disconnected' );
+            self._globalSocketConnected = false;
+          });
+
+          self._globalSocket.on('backgound-message', function(resData){
+            debug( 'onGlobalMessage : ', resData );
+            if( resData.NM == 'message' && resData.DT && self.onGlobalMessageCallback ){
+              self.onGlobalMessageCallback( resData.DT  );
+            }
+          });
+        }
+      });      
+    };
+
+    /**
+     * 글로벌 메시지 이벤트를 등록한다.
+     * @name onGlobalMessage
+     * @memberof Stalk
+     * @function
+     * @example
+     * stalk.onGlobalMessage();
+     *  console.log( data );
+     * });
+     */
+    Stalk.prototype.onGlobalMessage = function(callback){
+      this.onGlobalMessageCallback = callback;
+    };
+
     Stalk.prototype._createChat = function(users, callback){
 
       var self = this;
@@ -733,6 +794,16 @@
       });
     };
 
+    /**
+     * 메시지 이벤트를 등록한다.
+     * @name onMessage
+     * @memberof Channel
+     * @function
+     * @example
+     * channel.onMessage(function(data){
+     *  console.log( data );
+     * });
+     */
     Channel.prototype.onMessage = function(callback){
       this.onMessageCallback = callback;
     };
