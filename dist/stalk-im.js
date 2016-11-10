@@ -21971,7 +21971,7 @@ function isUndefined(arg) {
 
       if(typeof(userObj) == 'function' && !callback){
         callback = userObj;
-        userObj = undefined;
+        userObj = {};
       }
 
       if( userObj ){
