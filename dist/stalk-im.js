@@ -22413,6 +22413,41 @@ function isUndefined(arg) {
       });
     };
 
+
+    /**
+     * 현재 Channel에 선택된 사용자를 초대한다.
+     * @name addUserToChat
+     * @memberof Channel
+     * @function
+     * @param {ids} array - 초대할 사용자의 id array
+     * @param {callback} callback - channel 조회 후에 호출되는 함수
+     * @example
+     * channel.addUserToChat(['1QwE23'], function( err, channels ){
+     *   console.log( channels );
+     * });
+     */
+    Channel.prototype.addUserToChat = function(ids, callback){
+      var self = this;
+      var channelId = this.channelId;
+
+      Parse.Cloud.run('chats-add', {channelId:channelId, ids:ids}, {
+        success:function(result) {
+          var chat = {};
+          try {
+            chat = ParseUtil.fromChatToJSON(result);
+          } catch( err ){
+            console.error(err);
+          }
+
+          callback( null, chat );
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
+
+    };
+
     var ParseUtil = {};
 
     ParseUtil.fromUserToJSON = function(user, size){
