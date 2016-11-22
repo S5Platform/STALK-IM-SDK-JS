@@ -21921,7 +21921,7 @@ function isUndefined(arg) {
      * @param {string} channelId - channelId
      * @param {callback} callback - channel 오픈 후에 호출되는 함수
      * @example
-     * stalk.openChannel(channelId, ['qW2hcf','r3vFdQ'], function( err, channel ){
+     * stalk.openChannel(['qW2hcf','r3vFdQ'], channelId, function( err, channel ){
      *   console.log( channel );
      * });
      */
@@ -22151,6 +22151,7 @@ function isUndefined(arg) {
       self._stalk = stalk;
 
       if(data.id) self.id = data.id;
+      if(data.chatId) self.chatId = data.chatId;
       self.channelId = data.channelId;
       if(data.createdAt) self.createdAt = data.createdAt;
       if(data.updatedAt) self.updatedAt = data.updatedAt;
@@ -22430,21 +22431,31 @@ function isUndefined(arg) {
       var self = this;
       var channelId = this.channelId;
 
-      Parse.Cloud.run('chats-add', {channelId:channelId, ids:ids}, {
-        success:function(result) {
-          var chat = {};
-          try {
-            chat = ParseUtil.fromChatToJSON(result);
-          } catch( err ){
-            console.error(err);
-          }
+      if( self.users && self.users.length > 1 ){
+        Parse.Cloud.run('chats-add', {channelId:channelId, ids:ids}, {
+          success:function(result) {
+            var chat = {};
+            try {
+              chat = ParseUtil.fromChatToJSON(result);
+            } catch( err ){
+              console.error(err);
+            }
 
-          callback( null, chat );
-        },
-        error: function(object, error) {
-          callback( error, null );
+            callback( null, chat );
+          },
+          error: function(object, error) {
+            callback( error, null );
+          }
+        });
+      } else {
+        // 1:1 채널의 경우 신규 채널을 생성함
+        // user를 포함한 신규 채널을 생성한다.
+        for( var inx in self.users ){
+          ids.push( self.users[inx].id );
         }
-      });
+
+        self._stalk.openChannel(ids, callback);
+      }
 
     };
 
