@@ -959,6 +959,56 @@
 
     };
 
+    /**
+     * 현재 Channel에 선택된 사용자를 초대한다.
+     * @name leaveChat
+     * @memberof Channel
+     * @function
+     * @param {callback} callback - channel 조회 후에 호출되는 함수
+     * @example
+     * channel.leaveChat(['1QwE23'], function( err, channels ){
+     *   console.log( channels );
+     * });
+     */
+    Channel.prototype.leaveChat = function(chatId, callback){
+      var self = this;
+      var chatId;
+
+      if(typeof(chatId) == 'function' && !callback){
+        callback = chatId;
+        chatId = this.chatId;
+      }
+
+      if( self.users && self.users.length > 1 ){
+        Parse.Cloud.run('chats-remove', {id: chatId}, {
+          success:function(result) {
+            self._stalk._currentChannel = null;
+            callback( null, result );
+          },
+          error: function(object, error) {
+            callback( error, null );
+          }
+        });
+      } else if( self.users && self.users.length == 1 ){
+        self._stalk._currentChannel = null;
+        callback( null, {} );
+      }
+    };
+
+    Channel.prototype._clear = function(){
+      var self = this;
+      self._stalk = null;
+      self.id = null;
+      self.chatId =null;
+      self.channelId = null;
+      self.createdAt = null;
+      self.updatedAt = null;
+      self.name = null; 
+      self.uid = null;
+      self.users = null;
+      self._currentUser = null;
+    };
+
     var ParseUtil = {};
 
     ParseUtil.fromUserToJSON = function(user, size){

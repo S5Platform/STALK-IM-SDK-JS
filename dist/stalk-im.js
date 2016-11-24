@@ -22459,6 +22459,41 @@ function isUndefined(arg) {
 
     };
 
+    /**
+     * 현재 Channel에 선택된 사용자를 초대한다.
+     * @name leaveChat
+     * @memberof Channel
+     * @function
+     * @param {callback} callback - channel 조회 후에 호출되는 함수
+     * @example
+     * channel.leaveChat(['1QwE23'], function( err, channels ){
+     *   console.log( channels );
+     * });
+     */
+    Channel.prototype.leaveChat = function(chatId, callback){
+      var self = this;
+      var chatId;
+
+      if(typeof(chatId) == 'function' && !callback){
+        callback = chatId;
+        chatId = this.chatId;
+      }
+
+      if( self.users && self.users.length > 1 ){
+        Parse.Cloud.run('chats-remove', {id: chatId}, {
+          success:function(result) {
+            callback( null, result );
+          },
+          error: function(object, error) {
+            callback( error, null );
+          }
+        });
+      } else if( self.users && self.users.length == 1 ){
+        self._currentChannel = null;
+        callback( null, {} );
+      }
+    };
+
     var ParseUtil = {};
 
     ParseUtil.fromUserToJSON = function(user, size){
