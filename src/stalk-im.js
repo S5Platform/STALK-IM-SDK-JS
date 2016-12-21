@@ -109,6 +109,9 @@
      */
     Stalk.prototype.signUp = function(username, password, attrs, callback){
 
+      // 초기화
+      Parse.User.logOut();
+
       if(typeof(attrs) == 'function' && !callback){
         callback = attrs;
         attrs = undefined;
@@ -501,7 +504,7 @@
               'A='+self.appId+'&'+
               'U='+userId;
 
-          self._globalSocket = io.connect(url+'/background?'+query, socketOptions);
+          self._globalSocket = io(url+'/background?'+query, socketOptions);
 
           self._globalSocket.on('connect', function(){
             debug( 'global connection completed' );
@@ -713,7 +716,7 @@
           'U='+userId+'&'+
           'S='+node.name;
 
-      self._socket = io.connect(node.url+'/channel?'+query, socketOptions);
+      self._socket = io(node.url+'/channel?'+query, socketOptions);
 
       self._socket.on('connect', function(){
         debug( 'channel connection completed' );
@@ -960,7 +963,7 @@
     };
 
     /**
-     * 현재 Channel에 선택된 사용자를 초대한다.
+     * 현재 Channel에서 떠난다.
      * @name leaveChat
      * @memberof Channel
      * @function
@@ -979,20 +982,15 @@
         chatId = this.chatId;
       }
 
-      if( self.users && self.users.length > 1 ){
-        Parse.Cloud.run('chats-remove', {id: chatId}, {
-          success:function(result) {
-            self._stalk._currentChannel = null;
-            callback( null, result );
-          },
-          error: function(object, error) {
-            callback( error, null );
-          }
-        });
-      } else if( self.users && self.users.length == 1 ){
-        self._stalk._currentChannel = null;
-        callback( null, {} );
-      }
+      Parse.Cloud.run('chats-remove', {id: chatId}, {
+        success:function(result) {
+          self._stalk._currentChannel = null;
+          callback( null, result );
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
     };
 
     Channel.prototype._clear = function(){

@@ -15,7 +15,7 @@ gulp.task('clean', function (cb) {
 /** STALK **/
 var stalk_paths = {
   scripts: [
-    'node_modules/socket.io-client/socket.io.js',
+    'node_modules/socket.io-client/dist/socket.io.js',
     'src/*.js'
   ]
 };
