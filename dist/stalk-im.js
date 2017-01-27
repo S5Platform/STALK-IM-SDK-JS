@@ -23026,6 +23026,11 @@ function isUndefined(arg) {
     var ParseUtil = {};
 
     ParseUtil.fromUserToJSON = function(user, size){
+
+      if( typeof user.get === 'undefined' ){
+        return user;
+      }
+
       var username = user.get('username');
 
       var avatar = "";
@@ -23093,8 +23098,9 @@ function isUndefined(arg) {
           if (user.id === currentUser.id) {
             object.splice(index, 1);
           } else {
+            var nickname = (typeof user.get !== 'undefined') ? user.get('nickName') : user.nickName;
             object[index] = ParseUtil.fromUserToJSON(user);
-            names.push(user.get('nickName'));
+            names.push(nickname);
           }
         }, []);
 
@@ -23103,7 +23109,7 @@ function isUndefined(arg) {
 
       } catch (err){
         console.error("ajax error: " + err);
-        return {};
+        return null;
       }
 
       return {
