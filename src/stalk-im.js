@@ -29,7 +29,7 @@
       }
 
       if( host.endsWith("/") ){
-        host = host.substring(0, host.lastIndexOf("/") ); 
+        host = host.substring(0, host.lastIndexOf("/") );
       }
 
       var self = this;
@@ -266,7 +266,7 @@
      * @name searchUsers
      * @memberof Stalk
      * @function
-     * @param {string} keyword - 검색어 
+     * @param {string} keyword - 검색어
      * @param {callback} callback - 사용자 검색후 호출되는 callback
      * @example
      * stalk.searchUsers( 'james', function( err, users ){
@@ -316,7 +316,7 @@
         });
       } else{
         callback(null, []);
-      }      
+      }
     };
 
     /**
@@ -412,7 +412,7 @@
         error: function(object, error) {
           callback( error, null );
         }
-      });      
+      });
     };
 
     /**
@@ -445,7 +445,7 @@
           } else {
             self._createChat(users, callback);
           }
-        });     
+        });
       } else {
         self._createChat(users, callback);
       }
@@ -484,7 +484,7 @@
       var channel = new Channel(self, data);
       channel._getSocket( function(socket){
         self._currentChannel = channel;
-        callback( null, channel ); 
+        callback( null, channel );
       });
     };
 
@@ -523,7 +523,7 @@
             }
           });
         }
-      });      
+      });
     };
 
     /**
@@ -580,6 +580,7 @@
 
       var query = new Parse.Query(Chats)
       .include('channel.users')
+      .include('createdBy')
       .get(chatId, {
         success:function(chat) {
 
@@ -646,7 +647,7 @@
         error: function(object, error) {
           callback( error, null );
         }
-      }); 
+      });
     };
 
     var Channel = function(stalk, data){
@@ -701,7 +702,7 @@
 
           callback( null, result );
         }
-      }); 
+      });
     };
 
     Channel.prototype._connectChannel = function(node, callback){
@@ -741,7 +742,7 @@
             if( data.TS ){
               data.createdAt = new Date(data.TS);
               data.created = Util.dateToString(data.createdAt);
-            } 
+            }
           }
 
           debug( 'onMessage : ', data );
@@ -796,7 +797,7 @@
             callback( error, null );
           }
         });
-    }; 
+    };
 
     /**
      * 현재 채널에 Text 메세지를 전송한다.
@@ -812,7 +813,7 @@
 
       var currentUser = self._currentUser;
 
-      var data = { 
+      var data = {
         text: message,
         user: { id: currentUser.id, username: currentUser.username, nickName: currentUser.nickName, avatar: currentUser.avatar },
         _id: 'temp-id-' + self.channelId +"_"+Date.now()
@@ -908,7 +909,7 @@
       uploadFile.save().then(function() {
 
         var uploadedUrl = parseFile.url();
-        inputFile.value = '';        
+        inputFile.value = '';
 
         self.sendImageUrl(uploadedUrl);
         if( callback ) callback( null, uploadedUrl );
@@ -1001,7 +1002,7 @@
       self.channelId = null;
       self.createdAt = null;
       self.updatedAt = null;
-      self.name = null; 
+      self.name = null;
       self.uid = null;
       self.users = null;
       self._currentUser = null;
@@ -1021,7 +1022,7 @@
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         avatar = user.get('profileFile').url();
       } else {
-        avatar = Util.getDefaultProfile( username, size); 
+        avatar = Util.getDefaultProfile( username, size);
       }
 
       return {
@@ -1031,7 +1032,7 @@
         nickName: user.get('nickName'),
         avatar: avatar,
         statusMessage: user.get('statusMessage'),
-      }; 
+      };
     };
 
     ParseUtil.fromFollowToJSON = function(object){
@@ -1042,7 +1043,7 @@
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         avatar = user.get('profileFile').url();
       } else {
-        avatar = Util.getDefaultProfile( username );   
+        avatar = Util.getDefaultProfile( username );
       }
 
       var result = {
@@ -1274,7 +1275,7 @@
         type = 3;
       }
 
-      return result[type];  
+      return result[type];
     };
 
     var _rest = function( context, method, data, headers, cb){
@@ -1305,14 +1306,14 @@
          options.headers = {};
       }
 
-      options.headers['Content-Type'] = 'application/json';      
+      options.headers['Content-Type'] = 'application/json';
 
       var result = '';
       var request = http.request( options, function(res) {
 
         res.setEncoding('utf8');
-        res.on("data", function(chunk) {    
-          result = result + chunk;      
+        res.on("data", function(chunk) {
+          result = result + chunk;
         });
 
         res.on("end", function() {
@@ -1321,14 +1322,14 @@
             cb(r.status,r.message);
           }else{
             cb(null,r);
-          }  
+          }
         });
 
       }).on('error', function(e) {
         console.error("ajax error: " + e.message);
         cb('',result);
       });
-      
+
       if( method.toLowerCase() !== 'GET'.toLowerCase() ){
         request.write(JSON.stringify(data));
       }
